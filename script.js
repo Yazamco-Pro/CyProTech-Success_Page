@@ -20,12 +20,18 @@ function sendTrackingData() {
     const utmSource = params.get("utm_source") || "";
     const utmCampaign = params.get("utm_campaign") || "";
 
-    if (reqId && typeof gtag === "function") {
-        gtag('event', 'form_submitted', {
-            req_id: reqId,
-            utm_source: utmSource,
-            utm_campaign: utmCampaign
-        });
+    if (reqId) {
+        // המתן עד ש-gtag נטען לפני שליחת האירוע
+        const interval = setInterval(() => {
+            if (typeof gtag === "function") {
+                gtag('event', 'form_submitted', {
+                    req_id: reqId,
+                    utm_source: utmSource,
+                    utm_campaign: utmCampaign
+                });
+                clearInterval(interval);
+            }
+        }, 200);
     }
 }
 
