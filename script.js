@@ -1,4 +1,3 @@
-// יצירת חלקיקים נעים
 function createParticles() {
     const particlesContainer = document.querySelector('.particles');
     const particleCount = 40;
@@ -13,31 +12,30 @@ function createParticles() {
     }
 }
 
-// שליחת req_id ל-Google Analytics בלבד
-function sendTrackingData() {
+function sendIdToWebhook() {
     const params = new URLSearchParams(window.location.search);
-    const reqId = params.get("req_id");
-    const utmSource = params.get("utm_source") || "";
-    const utmCampaign = params.get("utm_campaign") || "";
+    const id = params.get("id");
 
-    if (reqId) {
-        // המתן עד ש-gtag נטען לפני שליחת האירוע
-        const interval = setInterval(() => {
-            if (typeof gtag === "function") {
-                gtag('event', 'form_submitted', {
-                    req_id: reqId,
-                    utm_source: utmSource,
-                    utm_campaign: utmCampaign
-                });
-                clearInterval(interval);
-            }
-        }, 200);
+    if (id) {
+        fetch("https://prod-171.westeurope.logic.azure.com:443/workflows/37e36087f93d4d26ae0a535fd2ab8b7e/triggers/manual/paths/invoke?api-version=2016-06-01&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=npAdSkb8ROa2dTbbJ16c3tezz9g8a62MDB0D6kMRKME", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({ id })
+        })
+        .then(response => {
+            if (!response.ok) throw new Error("Network response was not ok");
+            console.log("ID sent to webhook successfully");
+        })
+        .catch(error => {
+            console.error("Failed to send ID to webhook:", error);
+        });
     }
 }
 
-// הפעלת האפקטים והמעקב
 document.addEventListener('DOMContentLoaded', function () {
     createParticles();
-    sendTrackingData();
+    sendIdToWebhook();
     console.log('CYProTech page loaded successfully!');
 });
